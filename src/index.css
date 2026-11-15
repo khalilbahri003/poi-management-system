@@ -1,0 +1,4 @@
+html, body, #root { height: 100%; min-height: 100%; }
+* { box-sizing: border-box; }
+button, input, select { font: inherit; }
+.login-error { color: #b42318; }
