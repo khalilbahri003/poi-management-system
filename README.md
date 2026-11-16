@@ -1,93 +1,172 @@
-# POI Manager
+# POI Manager — Point of Interest Management System
 
-تطبيق داخلي لإدارة نقاط الاهتمام على خريطة، بواجهة React وخادم PHP وقاعدة MySQL/MariaDB. أزلت السجلات وكلمات المرور التجريبية التي كانت موجودة في قاعدة البيانات المرفقة؛ ملف SQL الآن ينشئ بنية فارغة فقط.
+**POI Manager** is an internal web application for managing and organizing Points of Interest (POIs) on an interactive map. It is built with a React frontend, a PHP backend, and a MySQL/MariaDB database.
 
-## المتطلبات
+The original database records and demo credentials have been removed. The provided SQL file now creates an empty database schema without including any user accounts, passwords, or location records.
 
-- PHP 8.1 أو أحدث مع الإضافات `pdo_mysql` و`mbstring`.
-- MySQL 8 أو MariaDB 10.6 أو أحدث.
-- Node.js 20 أو أحدث و`pnpm`.
+##  Requirements
 
-## التشغيل محليًا
+Make sure the following software and dependencies are installed:
 
-1. استورد المخطط النظيف إلى قاعدة جديدة، ثم أنشئ مستخدمًا مخصصًا للتطبيق بصلاحيات محدودة. لا تستورد ملف SQL الأصلي ولا تستخدم قاعدة بيانات قديمة من دون ترحيل مُراجع:
+- **PHP 8.1 or later**, with the `pdo_mysql` and `mbstring` extensions.
+- **MySQL 8** or **MariaDB 10.6 or later**.
+- **Node.js 20 or later**.
+- **pnpm** package manager.
 
-   ```sh
-   mysql -u root -p < poi_management_system.sql
-   mysql -u root -p
-   ```
+## Local Development Setup
 
-   داخل موجّه MySQL، بدّل كلمة المرور بقيمة عشوائية طويلة لا تحفظها في المشروع:
+Follow these steps to configure and run the application locally.
 
-   ```sql
-   CREATE USER 'poi_app'@'127.0.0.1' IDENTIFIED BY 'ضع-هنا-كلمة-مرور-عشوائية-طويلة';
-   GRANT SELECT, INSERT, UPDATE, DELETE ON poi_management_system.* TO 'poi_app'@'127.0.0.1';
-   ```
+### 1. Database Setup
 
-2. انسخ `.env.example` إلى `.env`، ثم املأ بيانات قاعدة البيانات ومفتاح `APP_IP_HASH_KEY` بقيمة عشوائية طويلة. لا ترفع `.env` إلى GitHub.
+Import the clean database schema into a new database, then create a dedicated application user with restricted permissions.
 
-   لتوليد قيمة عشوائية:
-
-   ```sh
-   php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'
-   ```
-
-3. أنشئ حساب المدير الأول من الطرفية؛ لا توجد كلمة مرور افتراضية:
-
-   ```sh
-   ADMIN_USERNAME=اسم_المدير ADMIN_PASSWORD='كلمة-مرور-طويلة-وفريدة' pnpm run create-admin
-   ```
-
-   في PowerShell:
-
-   ```powershell
-   $env:ADMIN_USERNAME = 'اسم_المدير'
-   $env:ADMIN_PASSWORD = 'كلمة-مرور-طويلة-وفريدة'
-   pnpm run create-admin
-   Remove-Item Env:ADMIN_PASSWORD
-   ```
-
-   استخدم كلمة مرور من 12 إلى 72 بايتًا؛ لا تحفظها في المستودع أو سجل الأوامر المشترك.
-
-4. ثبّت الاعتماديات:
-
-   ```sh
-   pnpm install --frozen-lockfile
-   ```
-
-5. شغّل واجهة التطوير وخادم PHP في نافذتين، من مجلد المشروع:
-
-   ```sh
-   php -S 127.0.0.1:8000 -t public public/router.php
-   ```
-
-   ```sh
-   pnpm start
-   ```
-
-   افتح `http://localhost:3000`. يتصل خادم التطوير بواجهة API عبر الوكيل المحلي.
-
-## بناء النسخة الإنتاجية وتشغيلها محليًا
+Do not import the original SQL file or reuse an existing database without a reviewed migration.
 
 ```sh
-pnpm build
+mysql -u root -p < poi_management_system.sql
+mysql -u root -p
+```
+
+Inside the MySQL prompt, create a dedicated database user. Replace the password placeholder with a long, randomly generated password that is not stored in the project.
+
+```sql
+CREATE USER 'poi_app'@'127.0.0.1' IDENTIFIED BY 'YOUR_LONG_RANDOM_PASSWORD';
+GRANT SELECT, INSERT, UPDATE, DELETE ON poi_management_system.* TO 'poi_app'@'127.0.0.1';
+```
+
+### 2. Environment Configuration
+
+Copy `.env.example` to `.env` and configure the database credentials and the `APP_IP_HASH_KEY` variable using long, randomly generated values.
+
+**Important:** Never commit or upload the `.env` file to GitHub.
+
+You can generate a secure random value using PHP:
+
+```sh
+php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'
+```
+
+### 3. Create the Initial Administrator Account
+
+Create the first administrator account directly from the terminal. No default administrator credentials are provided.
+
+```sh
+ADMIN_USERNAME=admin ADMIN_PASSWORD='YOUR_UNIQUE_LONG_PASSWORD' pnpm run create-admin
+```
+
+**PowerShell alternative:**
+
+```powershell
+$env:ADMIN_USERNAME = 'admin'
+$env:ADMIN_PASSWORD = 'YOUR_UNIQUE_LONG_PASSWORD'
+pnpm run create-admin
+Remove-Item Env:ADMIN_PASSWORD
+```
+
+Use a password between **12 and 72 bytes**. Never store administrator credentials in the repository or in shared command history.
+
+### 4. Install Dependencies
+
+Install the project dependencies using the frozen lockfile:
+
+```sh
+pnpm install --frozen-lockfile
+```
+
+### 5. Start the Development Servers
+
+Run the PHP backend and React development server in two separate terminal windows from the project directory.
+
+**Terminal 1 — PHP Backend:**
+
+```sh
 php -S 127.0.0.1:8000 -t public public/router.php
 ```
 
-ثم افتح `http://127.0.0.1:8000`. ينشئ البناء ملفات React في `public/site/`.
+**Terminal 2 — React Development Server:**
 
-## الاختبارات
+```sh
+pnpm start
+```
+
+Once both servers are running, open:
+
+```text
+http://localhost:3000
+```
+
+The React development server communicates with the PHP API through its local development proxy.
+
+## 🚀 Production Build & Local Deployment
+
+To build the production version of the React frontend, run:
+
+```sh
+pnpm build
+```
+
+Then start the PHP server:
+
+```sh
+php -S 127.0.0.1:8000 -t public public/router.php
+```
+
+Open the application at:
+
+```text
+http://127.0.0.1:8000
+```
+
+The production build generates the React frontend files inside `public/site/`.
+
+## Testing
+
+Run the frontend and backend test suites using the following commands:
+
+**Frontend Tests:**
 
 ```sh
 pnpm test
+```
+
+**PHP Backend Tests:**
+
+```sh
 pnpm run test:php
 ```
 
-يتطلب اختبار PHP قاعدة البيانات شغالة ووجود حساب مدير اختبار. عيّن `TEST_ADMIN_USERNAME` و`TEST_ADMIN_PASSWORD` في البيئة إلى بيانات حساب محلي، ثم نفّذ الاختبار. لا تستخدم بيانات الإنتاج للاختبار.
+PHP tests require a running database and an existing test administrator account.
 
-## ملاحظات أمنية
+Set `TEST_ADMIN_USERNAME` and `TEST_ADMIN_PASSWORD` in your environment to the credentials of a local test account before running the tests.
 
-- كلمات المرور تُخزّن كـ hashes باستخدام `password_hash`، والجلسات تستخدم كوكي HttpOnly وSameSite Strict مع تدوير معرّف الجلسة عند الدخول.
-- الكتابة تتطلب جلسة صالحة ورمز CSRF؛ الأدوار والملكية يجري التحقق منها على الخادم، لا من بيانات الواجهة.
-- يجب نشر التطبيق عبر HTTPS وضبط `SESSION_SECURE=1` و`APP_ORIGINS` على أصل الموقع الفعلي قبل الإتاحة العامة. استخدم مستخدم قاعدة بيانات محدود الصلاحيات، ونسخًا احتياطية آمنة، وتحديثات دورية.
-- الملف المرفق الأصلي احتوى كلمات مرور مكشوفة وسجلات مواقع بإحداثيات؛ النسخة المُصلحة لا تتضمن بيانات مستخدمين أو مواقع أو ملف `.env`. لا تستورد SQL القديم.
+**Never use production credentials or production accounts for testing.**
+
+## Security Considerations
+
+The application includes several security measures designed to protect user accounts, sessions, and location data.
+
+- **Password Protection:** User passwords are stored as secure hashes using PHP's `password_hash`, rather than as plain text.
+- **Session Security:** Sessions use `HttpOnly` and `SameSite=Strict` cookies. Session identifiers are regenerated upon successful login.
+- **CSRF Protection:** All write operations require a valid authenticated session and a CSRF token.
+- **Server-Side Authorization:** User roles and resource ownership are validated on the server rather than being trusted from frontend data.
+- **HTTPS Requirement:** The application must be deployed over HTTPS for public access.
+- **Secure Session Configuration:** Set `SESSION_SECURE=1` and configure `APP_ORIGINS` with the actual website origin before making the application publicly accessible.
+- **Database Security:** Use a dedicated database account with limited permissions.
+- **Maintenance & Backups:** Maintain secure backups and apply regular security updates.
+
+### Sensitive Data Removal
+
+The original database file contained exposed passwords and location records with geographic coordinates.
+
+The updated project has been cleaned to ensure that it does not include:
+
+- User records or account credentials.
+- Stored location records or geographic coordinates.
+- The original `.env` configuration file.
+
+**Important:** Do not import or reuse the original SQL database. Always start with the cleaned database schema included in the updated project.
+
+---
+
+**POI Manager** — A React and PHP-based application for managing Points of Interest through an interactive mapping interface, backed by a structured MySQL/MariaDB database.
